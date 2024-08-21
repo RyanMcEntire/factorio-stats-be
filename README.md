@@ -1,1 +1,1 @@
-# factorio-stats-be
+# factorio stats backend
