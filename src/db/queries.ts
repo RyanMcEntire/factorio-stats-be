@@ -1,4 +1,4 @@
-import { pool } from "./pool.js";
+import { pool } from './pool.js';
 
 export async function updateGameStats(stats: any) {
   const query = `
@@ -9,8 +9,8 @@ export async function updateGameStats(stats: any) {
 `;
   try {
     await pool.query(query, [stats]);
-    console.log("Game stats updated successfully");
+    console.log('Game stats database updated successfully');
   } catch (error) {
-    console.error("Error updating game stats: ", error);
+    console.error('Error adding stats to database: ', error);
   }
 }
