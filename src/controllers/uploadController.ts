@@ -1,10 +1,14 @@
-import { Request, Response } from 'express';
-import { updateGameStats } from '../db/queries.js';
+import { Request, Response } from "express";
+import { updateSnapshot } from "../db/queries.js";
+import { RequestWithDataChanges } from "../middleware/dataComparison.js";
 
-export default async function sayHiPost(req: Request, res: Response) {
-  console.log('Request received', req.headers);
-  console.log('Received json data from client: ');
+export async function handleStatsFromClient(
+  req: RequestWithDataChanges,
+  res: Response,
+) {
+  console.log("Received json data from client: ");
   const allStats = req.body;
-  await updateGameStats(allStats);
-  res.status(200).send('the server received your stats');
+  const dataChanges = req.dataChanges;
+  await updateSnapshot(allStats);
+  res.status(200).send("the server received your stats");
 }

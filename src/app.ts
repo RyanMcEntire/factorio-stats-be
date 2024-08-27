@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/upload", uploadRouter);
 
 app.get("/", (request: Request, response: Response) => {
-  response.status(200).send("Hello World");
+  response.status(200).send("Hello Worlds");
 });
 
 const options = {

@@ -1,8 +1,8 @@
 import { NextFunction, Request as ExpressRequest, Response } from "express";
 import { ValidData } from "../types/types";
-import { retrieveSnapshot } from "../db/queries";
+import { retrieveSnapshot } from "../db/queries.js";
 
-interface RequestWithDataChanges extends ExpressRequest {
+export interface RequestWithDataChanges extends ExpressRequest {
   dataChanges?: {
     production: any;
     consumption: any;
@@ -11,7 +11,7 @@ interface RequestWithDataChanges extends ExpressRequest {
   };
 }
 
-async function compareData(
+export async function compareData(
   req: RequestWithDataChanges,
   res: Response,
   next: NextFunction,
@@ -38,8 +38,8 @@ async function compareData(
   next();
 }
 
-function compareObjects(oldObj: any = {}, newObj: any = {}) {
-  const changes: any = {};
+function compareObjects<T>(oldObj: T, newObj: T): Partial<T> {
+  const changes: Partial<T> = {};
   for (const key in newObj) {
     if (oldObj[key] !== newObj[key]) {
       changes[key] = newObj[key];
@@ -48,8 +48,6 @@ function compareObjects(oldObj: any = {}, newObj: any = {}) {
   return changes;
 }
 
-function compareArrays(oldArr: string[], newArr: string[]) {
+function compareArrays(oldArr: string[], newArr: string[]): string[] {
   return newArr.filter((item) => !oldArr.includes(item));
 }
-
-export { compareData };

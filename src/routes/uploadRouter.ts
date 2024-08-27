@@ -1,9 +1,17 @@
 import { Router } from "express";
 import { apiKeyAuth } from "../middleware/apiKeyAuth.js";
-import sayHiPost from "../controllers/uploadController.js";
+import { handleStatsFromClient } from "../controllers/uploadController.js";
+import { validateData } from "../middleware/dataValidation.js";
+import { compareData } from "../middleware/dataComparison.js";
 
 const uploadRouter = Router();
 
-uploadRouter.post("/", apiKeyAuth, sayHiPost);
+uploadRouter.post(
+  "/",
+  apiKeyAuth,
+  validateData,
+  compareData,
+  handleStatsFromClient,
+);
 
 export { uploadRouter };
