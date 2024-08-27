@@ -8,7 +8,6 @@ export async function handleStatsFromClient(
 ) {
   console.log("Received json data from client: ");
   const allStats = req.body;
-  const dataChanges = req.dataChanges;
   await updateSnapshot(allStats);
   res.status(200).send("the server received your stats");
 }

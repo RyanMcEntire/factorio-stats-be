@@ -7,7 +7,7 @@ import {
   updateResearchTable,
 } from "../db/queries";
 
-expert async function updateDatabase(
+export async function updateDatabase(
   req: RequestWithDataChanges,
   res: Response,
   next: NextFunction,
