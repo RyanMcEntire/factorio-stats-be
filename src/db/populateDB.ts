@@ -1,4 +1,4 @@
-import { pool } from "./pool";
+import { pool } from "./pool.js";
 
 const setupDatabase = async () => {
   const client = await pool.connect();

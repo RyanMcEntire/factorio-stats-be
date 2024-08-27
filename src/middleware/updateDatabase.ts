@@ -1,11 +1,11 @@
 import { Response, NextFunction } from "express";
-import { RequestWithDataChanges } from "./dataComparison";
+import { RequestWithDataChanges } from "./dataComparison.js";
 import {
   updateProductionTable,
   updateConsumptionTable,
   updateModsTable,
   updateResearchTable,
-} from "../db/queries";
+} from "../db/queries.js";
 
 export async function updateDatabase(
   req: RequestWithDataChanges,
