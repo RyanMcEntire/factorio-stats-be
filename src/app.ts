@@ -7,7 +7,7 @@ import { uploadRouter } from './routes/uploadRouter.js';
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000; // Added default port
+const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
