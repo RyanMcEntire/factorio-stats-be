@@ -1,6 +1,4 @@
 import express, { Response, Request } from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { uploadRouter } from './routes/uploadRouter.js';
@@ -8,8 +6,6 @@ import { uploadRouter } from './routes/uploadRouter.js';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
