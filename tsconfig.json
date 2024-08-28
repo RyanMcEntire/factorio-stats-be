@@ -8,12 +8,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowJs": true,
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types"]
+    "allowJs": true
   },
-  "include": ["src/**/*", "node_modules/@types/node/*.d.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
