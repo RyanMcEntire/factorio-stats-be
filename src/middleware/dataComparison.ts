@@ -1,5 +1,5 @@
 import { NextFunction, Request as ExpressRequest, Response } from "express";
-import { ValidData } from "../types/types";
+import { ValidData } from "../types/types.js";
 import { retrieveSnapshot } from "../db/queries.js";
 
 export interface RequestWithDataChanges extends ExpressRequest {
