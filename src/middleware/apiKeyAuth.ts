@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv';
 
-export const apiKeyAuth = (req: Request, res: Response, next: NextFunction) => {
+export function apiKeyAuth(req: Request, res: Response, next: NextFunction) {
   const API_KEYS = [
     process.env.API_KEY_1,
     process.env.API_KEY_2,
@@ -14,4 +13,4 @@ export const apiKeyAuth = (req: Request, res: Response, next: NextFunction) => {
   }
 
   next();
-};
+}

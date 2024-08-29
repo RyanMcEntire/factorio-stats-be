@@ -1,22 +1,22 @@
 # factorio-stats-backend
 
-dummy example of the data going to the server:
+Simplified example of the data from the game:
 
-```js
-const gameStats = {
-  "all-stats": {
-    "item-production": {
-      pipe: 30,
-      belt: 300,
-    },
-    "item-consumption": {
-      inserter: 12,
-      pole: 25,
-    },
-    modlist: {
-      "long-reach": "1.2.2",
-      "always-day": "4.35.2",
-    },
+```json
+{
+  "tick": 2381400,
+  "production": {
+    "iron-chest": 55,
+    "steel-chest": 41
   },
-};
+  "consumption": {
+    "transport-belt": 5377,
+    "inserter": 6034
+  },
+  "research": ["automation", "automation-2"],
+  "mods": {
+    "base": "1.1.109",
+    "Bottleneck": "0.11.7"
+  }
+}
 ```

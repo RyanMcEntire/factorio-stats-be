@@ -1,8 +1,8 @@
-import { ValidData } from "../types/types.js";
-import { pool } from "./pool.js";
-import { QueryResult } from "pg";
+import { ValidData } from '../types/types';
+import { pool } from './pool';
+import { QueryResult } from 'pg';
 
-export async function updateSnapshot(stats: any) {
+export async function updateSnapshot(stats: ValidData): Promise<void> {
   const query = `
     INSERT INTO game_stats (id, stats)
     VALUES (1, $1::jsonb)
@@ -11,9 +11,9 @@ export async function updateSnapshot(stats: any) {
 `;
   try {
     await pool.query(query, [stats]);
-    console.log("Game stats database updated successfully");
+    console.log('Game stats database updated successfully');
   } catch (error) {
-    console.error("Error adding stats to database: ", error);
+    console.error('Error adding stats to database: ', error);
   }
 }
 
@@ -24,28 +24,28 @@ export async function retrieveSnapshot(): Promise<ValidData | null> {
     WHERE id = 1;`;
 
   try {
-    const result: QueryResult = await pool.query(query);
+    const result = await pool.query(query);
 
     if (result.rows.length > 0) {
-      const snapshot: ValidData = result.rows[0].stats;
+      const snapshot = result.rows[0].stats;
       return snapshot;
     } else {
-      console.log("no snapshot found in database");
+      console.log('no snapshot found in database');
       return null;
     }
   } catch (error) {
-    console.error("Error retriving snapshot from database", error);
+    console.error('Error retriving snapshot from database', error);
     throw error;
   }
 }
 
 export async function updateProductionTable(
-  production: ValidData["production"],
-  tick: number,
+  production: ValidData['production'],
+  tick: ValidData['tick']
 ): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     for (const [item, amount] of Object.entries(production)) {
       const query = `
@@ -55,10 +55,10 @@ export async function updateProductionTable(
       await client.query(query, [tick, item, amount]);
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT');
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Error updating production history: ", error);
+    await client.query('ROLLBACK');
+    console.error('Error updating production history: ', error);
     throw error;
   } finally {
     client.release();
@@ -66,12 +66,12 @@ export async function updateProductionTable(
 }
 
 export async function updateConsumptionTable(
-  consumption: ValidData["consumption"],
-  tick: number,
+  consumption: ValidData['consumption'],
+  tick: ValidData['tick']
 ): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     for (const [item, amount] of Object.entries(consumption)) {
       const query = `
@@ -81,10 +81,10 @@ export async function updateConsumptionTable(
       await client.query(query, [tick, item, amount]);
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT');
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Error updating consumption history: ", error);
+    await client.query('ROLLBACK');
+    console.error('Error updating consumption history: ', error);
     throw error;
   } finally {
     client.release();
@@ -92,12 +92,12 @@ export async function updateConsumptionTable(
 }
 
 export async function updateResearchTable(
-  research: ValidData["research"],
-  tick: number,
+  research: ValidData['research'],
+  tick: ValidData['tick']
 ): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     for (const tech of research) {
       const query = `
@@ -107,9 +107,9 @@ export async function updateResearchTable(
       await client.query(query, [tick, tech]);
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT');
   } catch (error) {
-    await client.query("ROLLBACK");
+    await client.query('ROLLBACK');
     throw error;
   } finally {
     client.release();
@@ -117,12 +117,12 @@ export async function updateResearchTable(
 }
 
 export async function updateModsTable(
-  mods: ValidData["mods"],
-  tick: number,
+  mods: ValidData['mods'],
+  tick: ValidData['tick']
 ): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     for (const [mod, version] of Object.entries(mods)) {
       const query = `
@@ -132,10 +132,10 @@ export async function updateModsTable(
       await client.query(query, [tick, mod, version]);
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT');
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Error updating mods history: ", error);
+    await client.query('ROLLBACK');
+    console.error('Error updating mods history: ', error);
     throw error;
   } finally {
     client.release();

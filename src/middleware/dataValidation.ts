@@ -1,25 +1,35 @@
 import { Request, Response, NextFunction } from 'express';
-import { ValidData } from '../types/types.js';
+import { ValidData } from '../types/types';
 
-function validateData(req: Request, res: Response, next: NextFunction) {
-  const data = req.body as Partial<ValidData>;
+export function validateData(req: Request, res: Response, next: NextFunction) {
+  const data = req.body as unknown;
 
-  if (
-    typeof data.tick !== 'number' ||
-    !isValidObject(data.production) ||
-    !isValidObject(data.consumption) ||
-    !Array.isArray(data.research) ||
-    !isValidObject(data.mods)
-  ) {
-    return res.status(400).json({ error: 'Invalid data structure' });
+  if (isValidData(data)) {
+    req.body = data;
+    next();
+  } else {
+    res.status(400).json({ error: 'Invalid data structure' });
+  }
+}
+
+
+function isValidData(data: unknown): data is ValidData {
+  if (typeof data !== 'object' || data === null) {
+    return false;
   }
 
-  req.body = data as ValidData;
-  next();
+  const { tick, production, consumption, research, mods } =
+    data as Partial<ValidData>;
+
+  return (
+    typeof tick === 'number' &&
+    isValidObject(production) &&
+    isValidObject(consumption) &&
+    Array.isArray(research) &&
+    isValidObject(mods)
+  );
 }
 
-function isValidObject(obj: any): boolean {
-  return obj && typeof obj === 'object' && !Array.isArray(obj);
+function isValidObject(obj: unknown): obj is Record<string, unknown> {
+   return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
 }
-
-export { validateData };

@@ -1,9 +1,9 @@
-import { pool } from "./pool.js";
+import { pool } from './pool';
 
 const setupDatabase = async () => {
   const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS game_stats (
@@ -50,11 +50,11 @@ const setupDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_mods_history_tick ON mods_history(tick);
     `);
 
-    await client.query("COMMIT");
-    console.log("Database setup completed successfully.");
+    await client.query('COMMIT');
+    console.log('Database setup completed successfully.');
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Error setting up database:", error);
+    await client.query('ROLLBACK');
+    console.error('Error setting up database:', error);
   } finally {
     client.release();
   }

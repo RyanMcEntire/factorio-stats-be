@@ -1,19 +1,19 @@
-import { Router } from "express";
-import { apiKeyAuth } from "../middleware/apiKeyAuth.js";
-import { handleStatsFromClient } from "../controllers/uploadController.js";
-import { validateData } from "../middleware/dataValidation.js";
-import { compareData } from "../middleware/dataComparison.js";
-import { updateDatabase } from "../middleware/updateDatabase.js";
+import { Router } from 'express';
+import { apiKeyAuth } from '../middleware/apiKeyAuth';
+import { handleStatsFromClient } from '../controllers/uploadController';
+import { validateData } from '../middleware/dataValidation';
+import { compareData } from '../middleware/dataComparison';
+import { updateDatabase } from '../middleware/updateDatabase';
 
 const uploadRouter = Router();
 
 uploadRouter.post(
-  "/",
+  '/',
   apiKeyAuth,
   validateData,
   compareData,
   updateDatabase,
-  handleStatsFromClient,
+  handleStatsFromClient
 );
 
 export { uploadRouter };
