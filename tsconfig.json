@@ -9,9 +9,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "types": ["node"],
-    "typeRoots": ["./node_modules/@types"],
-    "allowJs": true,
+    "allowJs": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }
