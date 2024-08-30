@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "node ./dist/app.js",
-    "build": "npm install && tsc",
+    "start": "node dist/app.js",
+    "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
   },
   "keywords": [],
