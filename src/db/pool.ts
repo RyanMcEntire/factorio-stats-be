@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-  connectionString: 'CONNECTION_STRING',
+  connectionString: process.env.CONNECTION_STRING,
 });
 
 export { pool };
