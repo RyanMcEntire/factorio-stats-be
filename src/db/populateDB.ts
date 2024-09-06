@@ -1,11 +1,11 @@
-import { pool } from './pool';
+import { pool } from "./pool";
 
 const setupDatabase = async () => {
-  const client = await pool.connect();
+  console.log("Starting database setup...");
   try {
-    await client.query('BEGIN');
+    await pool.query("BEGIN");
 
-    await client.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS game_stats (
         id SERIAL PRIMARY KEY,
         stats JSONB NOT NULL
@@ -43,20 +43,18 @@ const setupDatabase = async () => {
       );
     `);
 
-    await client.query(`
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_production_history_tick ON production_history(tick);
       CREATE INDEX IF NOT EXISTS idx_consumption_history_tick ON consumption_history(tick);
       CREATE INDEX IF NOT EXISTS idx_research_history_tick ON research_history(tick);
       CREATE INDEX IF NOT EXISTS idx_mods_history_tick ON mods_history(tick);
     `);
 
-    await client.query('COMMIT');
-    console.log('Database setup completed successfully.');
+    await pool.query("COMMIT");
+    console.log("Database setup completed successfully.");
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error setting up database:', error);
-  } finally {
-    client.release();
+    await pool.query("ROLLBACK");
+    console.error("Error setting up database:", error);
   }
 };
 
