@@ -1,7 +1,8 @@
-import express, { Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-import { uploadRouter } from './routes/uploadRouter';
+import express, { Request, Response } from "express";
+import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
+import { uploadRouter } from "./routes/uploadRouter";
+import { displayDataRouter } from "./routes/displayDataRouter";
 
 dotenv.config();
 
@@ -10,17 +11,18 @@ const PORT = process.env.PORT || 3000;
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
+  max: process.env.NODE_ENV === "production" ? 100 : 1000,
 });
 
 app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/upload', uploadRouter);
+app.use("/upload", uploadRouter);
+app.use("/get_data", displayDataRouter);
 
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).send('Hello World');
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).send("Hello World");
 });
 
 app.listen(PORT, () => {
