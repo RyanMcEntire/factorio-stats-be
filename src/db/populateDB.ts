@@ -13,6 +13,7 @@ const setupDatabase = async () => {
 
       CREATE TABLE IF NOT EXISTS production_history (
         id SERIAL PRIMARY KEY,
+        surface VARCHAR(255) NOT NULL,
         tick BIGINT NOT NULL,
         item VARCHAR(255) NOT NULL,
         amount INT NOT NULL,
@@ -21,6 +22,7 @@ const setupDatabase = async () => {
 
       CREATE TABLE IF NOT EXISTS consumption_history (
         id SERIAL PRIMARY KEY,
+        surface VARCHAR(255) NOT NULL,
         tick BIGINT NOT NULL,
         item VARCHAR(255) NOT NULL,
         amount INT NOT NULL,
