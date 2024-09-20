@@ -13,6 +13,7 @@ export function compareData(req: Request, res: Response, next: NextFunction) {
   retrieveSnapshot().then((oldData: ValidData | null) => {
     if (!oldData) {
       req.dataChanges = {
+        surface: newData.surface,
         production: newData.production,
         consumption: newData.consumption,
         research: newData.research,
@@ -20,6 +21,7 @@ export function compareData(req: Request, res: Response, next: NextFunction) {
       };
     } else if (newData.tick > oldData.tick) {
       req.dataChanges = {
+        surface: compareObjects(oldData.surface, newData.surface),
         production: compareObjects(oldData.production, newData.production),
         consumption: compareObjects(oldData.consumption, newData.consumption),
         research: compareArrays(oldData.research, newData.research),
@@ -27,6 +29,7 @@ export function compareData(req: Request, res: Response, next: NextFunction) {
       };
     } else {
       req.dataChanges = {
+        surface: "",
         production: {},
         consumption: {},
         research: [],

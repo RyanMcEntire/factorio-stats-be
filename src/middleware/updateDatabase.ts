@@ -20,6 +20,7 @@ export async function updateDatabase(
   }
 
   const hasChanges =
+    Object.keys(changes.surface).length > 0 ||
     Object.keys(changes.production).length > 0 ||
     Object.keys(changes.consumption).length > 0 ||
     changes.research.length > 0 ||
