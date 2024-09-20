@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import { uploadRouter } from "./routes/uploadRouter";
 import { displayDataRouter } from "./routes/displayDataRouter";
+import { displaySnapshotRouter } from "./routes/displaySnapshotRouter";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/upload", uploadRouter);
 app.use("/get_data", displayDataRouter);
+app.use("/get_snapshot", displaySnapshotRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send("Hello World");

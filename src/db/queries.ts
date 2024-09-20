@@ -7,6 +7,8 @@ import {
 } from "../types/types";
 import { pool } from "./pool";
 
+const surface = "nauvis";
+
 export async function updateSnapshot(stats: ValidData): Promise<void> {
   const query = `
     INSERT INTO game_stats (id, stats)
