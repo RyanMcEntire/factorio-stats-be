@@ -172,7 +172,7 @@ export async function getResearchHistory(): Promise<ResearchEntry[]> {
 
 export async function getModsHistory(): Promise<ModEntry[]> {
   const query =
-    "SELECT tick, name, version FROM mod_history ORDER BY tick DESC";
+    "SELECT tick, name, version FROM mods_history ORDER BY tick DESC";
   const result = await pool.query(query);
   return result.rows;
 }
