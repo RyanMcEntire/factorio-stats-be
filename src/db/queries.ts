@@ -149,26 +149,38 @@ export async function updateModsTable(
   }
 }
 
-export async function getProductionHistory(): Promise<ProductionEntry[]> {
-  const query = "SELECT * FROM production_history ORDER BY tick DESC, item";
+export async function getProductionHistory(): Promise<
+  Omit<ProductionEntry, "id" | "created_at">[]
+> {
+  const query =
+    "SELECT tick, item, amount FROM production_history ORDER BY tick DESC, item";
   const result = await pool.query(query);
   return result.rows;
 }
 
-export async function getConsumptionHistory(): Promise<ConsumptionEntry[]> {
-  const query = "SELECT * FROM consumption_history ORDER BY tick DESC, item";
+export async function getConsumptionHistory(): Promise<
+  Omit<ConsumptionEntry, "id" | "created_at">[]
+> {
+  const query =
+    "SELECT tick, item, amount FROM consumption_history ORDER BY tick DESC, item";
   const result = await pool.query(query);
   return result.rows;
 }
 
-export async function getResearchHistory(): Promise<ResearchEntry[]> {
-  const query = "SELECT * FROM research_history ORDER BY tick DESC";
+export async function getResearchHistory(): Promise<
+  Omit<ResearchEntry, "id" | "created_at">[]
+> {
+  const query =
+    "SELECT tick, technology FROM research_history ORDER BY tick DESC";
   const result = await pool.query(query);
   return result.rows;
 }
 
-export async function getModsHistory(): Promise<ModEntry[]> {
-  const query = "SELECT * FROM mods_history ORDER BY tick DESC, name";
+export async function getModsHistory(): Promise<
+  Omit<ModEntry, "id" | "created_at">[]
+> {
+  const query =
+    "SELECT tick, name, version FROM mod_history ORDER BY tick DESC";
   const result = await pool.query(query);
   return result.rows;
 }
