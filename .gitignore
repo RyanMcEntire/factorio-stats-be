@@ -4,3 +4,4 @@ dist
 *.pem
 *sql
 temp.json
+scratch.md
