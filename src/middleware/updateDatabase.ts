@@ -5,10 +5,10 @@ import {
   updateModsTable,
   updateResearchTable,
 } from "../db/queries";
-import { PartialDataChanges } from "../types/types";
+import { ChangedData } from "../types/types";
 
 export async function updateDatabase(
-  req: Request & { dataChanges?: PartialDataChanges },
+  req: Request & { dataChanges?: ChangedData },
   res: Response,
   next: NextFunction,
 ) {
@@ -20,9 +20,7 @@ export async function updateDatabase(
   }
 
   const hasChanges =
-    Object.keys(changes.surface).length > 0 ||
-    Object.keys(changes.production).length > 0 ||
-    Object.keys(changes.consumption).length > 0 ||
+    Object.keys(changes.surfaces).length > 0 ||
     changes.research.length > 0 ||
     Object.keys(changes.mods).length > 0;
 
@@ -32,17 +30,23 @@ export async function updateDatabase(
   }
 
   try {
-    if (Object.keys(changes.production).length > 0) {
-      await updateProductionTable(
-        changes.production as Record<string, number>,
-        tick,
-      );
-    }
-    if (Object.keys(changes.consumption).length > 0) {
-      await updateConsumptionTable(
-        changes.consumption as Record<string, number>,
-        tick,
-      );
+    for (const [surfaceName, surfaceChanges] of Object.entries(
+      changes.surfaces,
+    )) {
+      if (surfaceChanges.production) {
+        await updateProductionTable(
+          surfaceName,
+          surfaceChanges.production,
+          tick,
+        );
+      }
+      if (surfaceChanges.consumption) {
+        await updateConsumptionTable(
+          surfaceName,
+          surfaceChanges.consumption,
+          tick,
+        );
+      }
     }
     if (changes.research.length > 0) {
       await updateResearchTable(changes.research, tick);

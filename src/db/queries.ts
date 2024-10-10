@@ -7,8 +7,6 @@ import {
 } from "../types/types";
 import { pool } from "./pool";
 
-const surface = "nauvis";
-
 export async function updateSnapshot(stats: ValidData): Promise<void> {
   const query = `
     INSERT INTO game_stats (id, stats)
@@ -46,6 +44,11 @@ export async function retrieveSnapshot(): Promise<ValidData | null> {
   }
 }
 
+/*
+for each surface
+get production history
+production history data shape doesn't change
+
 export async function updateProductionTable(
   production: ValidData["production"],
   tick: ValidData["tick"],
@@ -56,10 +59,38 @@ export async function updateProductionTable(
 
     for (const [item, amount] of Object.entries(production)) {
       const query = `
-        INSERT INTO production_history (tick, item, amount)
-        VALUES ($1, $2, $3);
+        INSERT INTO production_history (tick, surface, item, amount)
+        VALUES ($1, $2, $3, $4);
       `;
-      await client.query(query, [tick, item, amount]);
+      await client.query(query, [tick, surface, item, amount]);
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error updating production history: ", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+*/
+
+export async function updateProductionTable(
+  surface: string,
+  production: Partial<Record<string, number>>,
+  tick: ValidData["tick"],
+): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    for (const [item, amount] of Object.entries(production)) {
+      const query = `
+        INSERT INTO production_history (tick, surface, item, amount)
+        VALUES ($1, $2, $3, $4);
+      `;
+      await client.query(query, [tick, surface, item, amount]);
     }
 
     await client.query("COMMIT");
@@ -73,7 +104,8 @@ export async function updateProductionTable(
 }
 
 export async function updateConsumptionTable(
-  consumption: ValidData["consumption"],
+  surface: string,
+  consumption: Partial<Record<string, number>>,
   tick: ValidData["tick"],
 ): Promise<void> {
   const client = await pool.connect();
@@ -82,10 +114,10 @@ export async function updateConsumptionTable(
 
     for (const [item, amount] of Object.entries(consumption)) {
       const query = `
-        INSERT INTO consumption_history (tick, item, amount)
-        VALUES ($1, $2, $3);
+        INSERT INTO consumption_history (tick, surface, item, amount)
+        VALUES ($1, $2, $3, $4);
         `;
-      await client.query(query, [tick, item, amount]);
+      await client.query(query, [tick, surface, item, amount]);
     }
 
     await client.query("COMMIT");
@@ -151,14 +183,14 @@ export async function updateModsTable(
 
 export async function getProductionHistory(): Promise<ProductionEntry[]> {
   const query =
-    "SELECT tick, item, amount FROM production_history ORDER BY tick DESC, item";
+    "SELECT tick, surface, item, amount FROM production_history ORDER BY tick DESC, item";
   const result = await pool.query(query);
   return result.rows;
 }
 
 export async function getConsumptionHistory(): Promise<ConsumptionEntry[]> {
   const query =
-    "SELECT tick, item, amount FROM consumption_history ORDER BY tick DESC, item";
+    "SELECT tick, surface, item, amount FROM consumption_history ORDER BY tick DESC, item";
   const result = await pool.query(query);
   return result.rows;
 }

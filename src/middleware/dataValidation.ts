@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ValidData } from "../types/types";
+import { ValidData, ValidSurfaces, ValidItems } from "../types/types";
 
 export function validateData(req: Request, res: Response, next: NextFunction) {
   const data = req.body as unknown;
@@ -17,16 +17,35 @@ function isValidData(data: unknown): data is ValidData {
     return false;
   }
 
-  const { surface, tick, production, consumption, research, mods } =
-    data as Partial<ValidData>;
+  const { tick, surfaces, research, mods } = data as Partial<ValidData>;
 
   return (
-    typeof surface === "string" &&
     typeof tick === "number" &&
+    isValidSurfaces(surfaces) &&
+    Array.isArray(research) &&
+    research.every((item) => typeof item === "string") &&
+    isValidObject(mods) &&
+    Object.values(mods).every((value) => typeof value === "string")
+  );
+}
+
+function isValidSurfaces(surfaces: unknown): surfaces is ValidSurfaces {
+  if (!isValidObject(surfaces)) {
+    return false;
+  }
+  return Object.values(surfaces).every(isValidItems);
+}
+
+function isValidItems(items: unknown): items is ValidItems {
+  if (!isValidObject(items)) {
+    return false;
+  }
+  const { production, consumption } = items as Partial<ValidItems>;
+  return (
     isValidObject(production) &&
     isValidObject(consumption) &&
-    Array.isArray(research) &&
-    isValidObject(mods)
+    Object.values(production!).every((value) => typeof value === "number") &&
+    Object.values(consumption!).every((value) => typeof value === "number")
   );
 }
 

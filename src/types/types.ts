@@ -1,46 +1,65 @@
-export interface ValidData {
-  surface: string;
-  tick: number;
+export type ValidItems = {
   production: { [key: string]: number };
   consumption: { [key: string]: number };
+};
+
+export type ValidSurfaces = {
+  [key: string]: ValidItems;
+};
+
+export interface ValidData {
+  tick: number;
+  surfaces: ValidSurfaces;
   research: string[];
   mods: { [key: string]: string };
 }
 
+export type ChangedItems = {
+  production?: Partial<Record<string, number>>;
+  consumption?: Partial<Record<string, number>>;
+};
+
+export type ChangedSurfaces = {
+  [key: string]: ChangedItems;
+};
+
 export interface ChangedData {
-  production: Partial<Record<string, number>>;
-  surface: string;
-  consumption: Partial<Record<string, number>>;
+  surfaces: ChangedSurfaces;
   research: string[];
   mods: Partial<Record<string, string>>;
 }
 
-export type DataChanges = {
-  surface: string;
+type ItemChanges = {
   production: Record<string, number>;
   consumption: Record<string, number>;
+};
+
+type SurfaceChanges = {
+  [key: string]: ItemChanges;
+};
+
+export type DataChanges = {
+  surfaces: SurfaceChanges;
   research: string[];
   mods: Record<string, string>;
 };
 
 export type PartialDataChanges = {
-  surface: string;
-  production: Partial<Record<string, number>>;
-  consumption: Partial<Record<string, number>>;
+  surfaces: ChangedSurfaces;
   research: string[];
   mods: Partial<Record<string, string>>;
 };
 
 export interface ProductionEntry {
-  surface: string;
   tick: number;
+  surface: string;
   item: string;
   amount: number;
 }
 
 export interface ConsumptionEntry {
-  surface: string;
   tick: number;
+  surface: string;
   item: string;
   amount: number;
 }
