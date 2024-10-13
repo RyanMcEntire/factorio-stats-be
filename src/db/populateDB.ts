@@ -53,7 +53,7 @@ const setupDatabase = async () => {
     `);
 
     await pool.query(`
-      CREATE OR REPLACE VIEW complete_production_history AS
+      CREATE OR REPLACE VIEW complete_production_history_delta AS
       WITH all_production_combos AS (
           SELECT DISTINCT t.tick, i.item
           FROM (SELECT DISTINCT tick FROM production_history) t
@@ -69,20 +69,39 @@ const setupDatabase = async () => {
               ORDER BY ph.tick DESC
               LIMIT 1) as last_amount
           FROM all_production_combos apc
+      ),
+      current_and_previous AS (
+          SELECT
+              lka.tick,
+              lka.item,
+              COALESCE(ph.amount, lka.last_amount) AS current_amount,
+              LAG(COALESCE(ph.amount, lka.last_amount)) OVER (PARTITION BY lka.item ORDER BY lka.tick) AS previous_amount
+          FROM last_known_amounts lka
+          LEFT JOIN production_history ph ON lka.tick = ph.tick AND lka.item = ph.item
+      ),
+      delta_calculation AS (
+          SELECT
+              tick,
+              item,
+              COALESCE(current_amount - previous_amount, 0) AS delta_amount
+          FROM current_and_previous
+      ),
+      items_with_changes AS (
+          SELECT DISTINCT item
+          FROM delta_calculation
+          WHERE delta_amount > 0
       )
-      SELECT
-          lka.tick,
-          lka.item,
-          COALESCE(ph.amount, lka.last_amount) AS amount
-      FROM last_known_amounts lka
-      LEFT JOIN production_history ph ON lka.tick = ph.tick AND lka.item = ph.item
-      ORDER BY lka.item, lka.tick;
+      SELECT dc.tick, dc.item, dc.delta_amount
+      FROM delta_calculation dc
+      INNER JOIN items_with_changes iwc ON dc.item = iwc.item
+      ORDER BY dc.item, dc.tick;
 
-    CREATE OR REPLACE VIEW complete_consumption_history AS
+
+    CREATE OR REPLACE VIEW complete_consumption_history_delta AS
     WITH all_consumption_combos AS (
-    SELECT DISTINCT t.tick, i.item
-    FROM (SELECT DISTINCT tick FROM consumption_history) t
-    CROSS JOIN (SELECT DISTINCT item FROM consumption_history) i
+        SELECT DISTINCT t.tick, i.item
+        FROM (SELECT DISTINCT tick FROM consumption_history) t
+        CROSS JOIN (SELECT DISTINCT item FROM consumption_history) i
     ),
     last_known_amounts AS (
         SELECT
@@ -94,15 +113,32 @@ const setupDatabase = async () => {
             ORDER BY ch.tick DESC
             LIMIT 1) as last_amount
         FROM all_consumption_combos acc
+    ),
+    current_and_previous AS (
+        SELECT
+            lka.tick,
+            lka.item,
+            COALESCE(ch.amount, lka.last_amount) AS current_amount,
+            LAG(COALESCE(ch.amount, lka.last_amount)) OVER (PARTITION BY lka.item ORDER BY lka.tick) AS previous_amount
+        FROM last_known_amounts lka
+        LEFT JOIN consumption_history ch ON lka.tick = ch.tick AND lka.item = ch.item
+    ),
+    delta_calculation AS (
+        SELECT
+            tick,
+            item,
+            COALESCE(current_amount - previous_amount, 0) AS delta_amount
+        FROM current_and_previous
+    ),
+    items_with_changes AS (
+        SELECT DISTINCT item
+        FROM delta_calculation
+        WHERE delta_amount > 0
     )
-
-    SELECT
-        lka.tick,
-        lka.item,
-        COALESCE(ch.amount, lka.last_amount) AS amount
-    FROM last_known_amounts lka
-    LEFT JOIN consumption_history ch ON lka.tick = ch.tick AND lka.item = ch.item
-    ORDER BY lka.item, lka.tick; 
+    SELECT dc.tick, dc.item, dc.delta_amount
+    FROM delta_calculation dc
+    INNER JOIN items_with_changes iwc ON dc.item = iwc.item
+    ORDER BY dc.item, dc.tick;
     `);
 
     await pool.query("COMMIT");
