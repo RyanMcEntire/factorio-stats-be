@@ -55,17 +55,20 @@ const setupDatabase = async () => {
     await pool.query(`
       CREATE OR REPLACE VIEW complete_production_history_delta AS
       WITH all_production_combos AS (
-          SELECT DISTINCT t.tick, i.item
+          SELECT DISTINCT t.tick, i.item, i.surface
           FROM (SELECT DISTINCT tick FROM production_history) t
-          CROSS JOIN (SELECT DISTINCT item FROM production_history) i
+          CROSS JOIN (SELECT DISTINCT item, surface FROM production_history) i
       ),
       last_known_amounts AS (
           SELECT
               apc.tick,
               apc.item,
+              apc.surface,
               (SELECT ph.amount
               FROM production_history ph
-              WHERE ph.item = apc.item AND ph.tick <= apc.tick
+              WHERE ph.item = apc.item 
+                  AND ph.surface = apc.surface 
+                  AND ph.tick <= apc.tick
               ORDER BY ph.tick DESC
               LIMIT 1) as last_amount
           FROM all_production_combos apc
@@ -74,71 +77,89 @@ const setupDatabase = async () => {
           SELECT
               lka.tick,
               lka.item,
+              lka.surface,
               COALESCE(ph.amount, lka.last_amount) AS current_amount,
-              LAG(COALESCE(ph.amount, lka.last_amount)) OVER (PARTITION BY lka.item ORDER BY lka.tick) AS previous_amount
+              LAG(COALESCE(ph.amount, lka.last_amount)) OVER (PARTITION BY lka.item, lka.surface 
+                  ORDER BY lka.tick) AS previous_amount
           FROM last_known_amounts lka
-          LEFT JOIN production_history ph ON lka.tick = ph.tick AND lka.item = ph.item
+          LEFT JOIN production_history ph 
+              ON lka.tick = ph.tick 
+              AND lka.item = ph.item 
+              AND lka.surface = ph.surface
       ),
       delta_calculation AS (
           SELECT
               tick,
               item,
+              surface,
               COALESCE(current_amount - previous_amount, 0) AS delta_amount
           FROM current_and_previous
       ),
       items_with_changes AS (
-          SELECT DISTINCT item
+          SELECT DISTINCT item, surface
           FROM delta_calculation
           WHERE delta_amount > 0
       )
-      SELECT dc.tick, dc.item, dc.delta_amount
+      SELECT dc.tick, dc.item, dc.surface, dc.delta_amount
       FROM delta_calculation dc
-      INNER JOIN items_with_changes iwc ON dc.item = iwc.item
+      INNER JOIN items_with_changes iwc ON dc.item = iwc.item AND dc.surface = iwc.surface
+      ORDER BY dc.surface, dc.item, dc.tick;
+
+
+      CREATE OR REPLACE VIEW complete_consumption_history_delta AS
+      WITH all_consumption_combos AS (
+          SELECT DISTINCT t.tick, i.item, i.surface
+          FROM (SELECT DISTINCT tick FROM consumption_history) t
+          CROSS JOIN (SELECT DISTINCT item, surface FROM consumption_history) i
+      ),
+      last_known_amounts AS (
+          SELECT
+              acc.tick,
+              acc.item,
+              acc.surface,
+              (SELECT ch.amount
+              FROM consumption_history ch
+              WHERE ch.item = acc.item 
+                  AND ch.surface = acc.surface 
+                  AND ch.tick <= acc.tick
+              ORDER BY ch.tick DESC
+              LIMIT 1) as last_amount
+          FROM all_consumption_combos acc
+      ),
+      current_and_previous AS (
+          SELECT
+              lka.tick,
+              lka.item,
+              lka.surface,
+              COALESCE(ch.amount, lka.last_amount) AS current_amount,
+              LAG(COALESCE(ch.amount, lka.last_amount)) 
+              OVER (PARTITION BY lka.item, lka.surface ORDER BY lka.tick) AS previous_amount
+          FROM last_known_amounts lka
+          LEFT JOIN consumption_history ch 
+              ON lka.tick = ch.tick 
+              AND lka.item = ch.item
+              AND lka.surface = ch.surface
+      ),
+      delta_calculation AS (
+          SELECT
+              tick,
+              item,
+              surface,
+              COALESCE(current_amount - previous_amount, 0) AS delta_amount
+          FROM current_and_previous
+      ),
+      items_with_changes AS (
+          SELECT DISTINCT item, surface
+          FROM delta_calculation
+          WHERE delta_amount > 0
+      )
+      SELECT dc.tick, dc.item, dc.surface, dc.delta_amount
+      FROM delta_calculation dc
+      INNER JOIN items_with_changes iwc 
+          ON dc.item = iwc.item
+          AND dc.surface = iwc.surface
       ORDER BY dc.item, dc.tick;
 
-
-    CREATE OR REPLACE VIEW complete_consumption_history_delta AS
-    WITH all_consumption_combos AS (
-        SELECT DISTINCT t.tick, i.item
-        FROM (SELECT DISTINCT tick FROM consumption_history) t
-        CROSS JOIN (SELECT DISTINCT item FROM consumption_history) i
-    ),
-    last_known_amounts AS (
-        SELECT
-            acc.tick,
-            acc.item,
-            (SELECT ch.amount
-            FROM consumption_history ch
-            WHERE ch.item = acc.item AND ch.tick <= acc.tick
-            ORDER BY ch.tick DESC
-            LIMIT 1) as last_amount
-        FROM all_consumption_combos acc
-    ),
-    current_and_previous AS (
-        SELECT
-            lka.tick,
-            lka.item,
-            COALESCE(ch.amount, lka.last_amount) AS current_amount,
-            LAG(COALESCE(ch.amount, lka.last_amount)) OVER (PARTITION BY lka.item ORDER BY lka.tick) AS previous_amount
-        FROM last_known_amounts lka
-        LEFT JOIN consumption_history ch ON lka.tick = ch.tick AND lka.item = ch.item
-    ),
-    delta_calculation AS (
-        SELECT
-            tick,
-            item,
-            COALESCE(current_amount - previous_amount, 0) AS delta_amount
-        FROM current_and_previous
-    ),
-    items_with_changes AS (
-        SELECT DISTINCT item
-        FROM delta_calculation
-        WHERE delta_amount > 0
-    )
-    SELECT dc.tick, dc.item, dc.delta_amount
-    FROM delta_calculation dc
-    INNER JOIN items_with_changes iwc ON dc.item = iwc.item
-    ORDER BY dc.item, dc.tick;
     `);
 
     await pool.query("COMMIT");
