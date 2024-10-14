@@ -7,6 +7,17 @@ import {
 } from "../types/types";
 import { pool } from "./pool";
 
+interface Item {
+  tick: number;
+  item: string;
+  surface: string;
+  delta_amount: number;
+}
+
+interface ItemsBySurface {
+  [surface: string]: Item[];
+}
+
 export async function updateSnapshot(stats: ValidData): Promise<void> {
   const query = `
     INSERT INTO game_stats (id, stats)
@@ -165,16 +176,46 @@ export async function getConsumptionHistory(): Promise<ConsumptionEntry[]> {
 }
 */
 
-export async function getProductionHistory(): Promise<ProductionEntry[]> {
-  const query = "SELECT * from complete_production_history_delta";
-  const result = await pool.query(query);
-  return result.rows;
+export async function getProductionHistory(): Promise<ItemsBySurface> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      "SELECT * from complete_production_history_delta ORDER BY surface, item, tick",
+    );
+    const productionBySurface: ItemsBySurface = {};
+
+    result.rows.forEach((row: Item) => {
+      if (!productionBySurface[row.surface]) {
+        productionBySurface[row.surface] = [];
+      }
+      productionBySurface[row.surface].push(row);
+    });
+
+    return productionBySurface;
+  } finally {
+    client.release();
+  }
 }
 
-export async function getConsumptionHistory(): Promise<ConsumptionEntry[]> {
-  const query = "SELECT * from complete_production_history_delta";
-  const result = await pool.query(query);
-  return result.rows;
+export async function getConsumptionHistory(): Promise<ItemsBySurface> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      "SELECT * from complete_consumption_history_delta ORDER BY surface, item, tick",
+    );
+    const consumptionBySurface: ItemsBySurface = {};
+
+    result.rows.forEach((row: Item) => {
+      if (!consumptionBySurface[row.surface]) {
+        consumptionBySurface[row.surface] = [];
+      }
+      consumptionBySurface[row.surface].push(row);
+    });
+
+    return consumptionBySurface;
+  } finally {
+    client.release();
+  }
 }
 
 export async function getResearchHistory(): Promise<ResearchEntry[]> {
