@@ -10,7 +10,6 @@ import { pool } from "./pool";
 interface Item {
   tick: number;
   item: string;
-  surface: string;
   delta_amount: number;
 }
 
@@ -184,11 +183,15 @@ export async function getProductionHistory(): Promise<ItemsBySurface> {
     );
     const productionBySurface: ItemsBySurface = {};
 
-    result.rows.forEach((row: Item) => {
+    result.rows.forEach((row) => {
       if (!productionBySurface[row.surface]) {
         productionBySurface[row.surface] = [];
       }
-      productionBySurface[row.surface].push(row);
+      productionBySurface[row.surface].push({
+        tick: row.tick,
+        item: row.item,
+        delta_amount: row.delta_amount,
+      });
     });
 
     return productionBySurface;
@@ -205,11 +208,15 @@ export async function getConsumptionHistory(): Promise<ItemsBySurface> {
     );
     const consumptionBySurface: ItemsBySurface = {};
 
-    result.rows.forEach((row: Item) => {
+    result.rows.forEach((row) => {
       if (!consumptionBySurface[row.surface]) {
         consumptionBySurface[row.surface] = [];
       }
-      consumptionBySurface[row.surface].push(row);
+      consumptionBySurface[row.surface].push({
+        tick: row.tick,
+        item: row.item,
+        delta_amount: row.delta_amount,
+      });
     });
 
     return consumptionBySurface;
