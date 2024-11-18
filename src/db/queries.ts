@@ -17,6 +17,26 @@ interface ItemsBySurface {
   [surface: string]: Item[];
 }
 
+export async function retrieveSnapshot(): Promise<ValidData | null> {
+  const query = `
+    SELECT stats 
+    FROM game_stats 
+    WHERE id = 1;`;
+  try {
+    const result = await pool.query(query);
+    if (result.rows.length > 0) {
+      const snapshot = result.rows[0].stats;
+      return snapshot;
+    } else {
+      console.log("no snapshot found in database");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error retriving snapshot from database", error);
+    throw error;
+  }
+}
+
 export async function updateSnapshotWithClient(
   client: any,
   stats: ValidData,
@@ -28,7 +48,7 @@ export async function updateSnapshotWithClient(
     DO UPDATE SET stats = $1::jsonb;
 `;
   try {
-    await pool.query(query, [stats]);
+    await client.query(query, [stats]);
     console.log("Game stats database updated successfully");
   } catch (error) {
     console.error("Error adding stats to database: ", error);
@@ -44,7 +64,7 @@ export async function retrieveSnapshotWithClient(
     WHERE id = 1;`;
 
   try {
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     if (result.rows.length > 0) {
       return result.rows[0].stats;
