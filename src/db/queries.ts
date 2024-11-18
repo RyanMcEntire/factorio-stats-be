@@ -17,7 +17,10 @@ interface ItemsBySurface {
   [surface: string]: Item[];
 }
 
-export async function updateSnapshot(stats: ValidData): Promise<void> {
+export async function updateSnapshotWithClient(
+  client: any,
+  stats: ValidData,
+): Promise<void> {
   const query = `
     INSERT INTO game_stats (id, stats)
     VALUES (1, $1::jsonb)
@@ -32,7 +35,9 @@ export async function updateSnapshot(stats: ValidData): Promise<void> {
   }
 }
 
-export async function retrieveSnapshot(): Promise<ValidData | null> {
+export async function retrieveSnapshotWithClient(
+  client: any,
+): Promise<ValidData | null> {
   const query = `
     SELECT stats 
     FROM game_stats 
@@ -42,8 +47,7 @@ export async function retrieveSnapshot(): Promise<ValidData | null> {
     const result = await pool.query(query);
 
     if (result.rows.length > 0) {
-      const snapshot = result.rows[0].stats;
-      return snapshot;
+      return result.rows[0].stats;
     } else {
       console.log("no snapshot found in database");
       return null;
